@@ -5,6 +5,8 @@ package deu.cse.lrr.server;
 
 import java.io.*;
 import java.net.*;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  *
@@ -14,6 +16,7 @@ public class LRRServer {
 
     public static final int PORT = 9999;
     private static final UserInfoManager userInfoManager = new UserInfoManager();
+    private static final Set<String> loggedInUsers = ConcurrentHashMap.newKeySet();
 
 
     public static void main(String[] args) {
@@ -31,6 +34,7 @@ public class LRRServer {
 
     private static class ClientHandler extends Thread {
         private final Socket socket;
+        private String loggedInId = null;
 
         public ClientHandler(Socket socket) {
             this.socket = socket;
@@ -59,7 +63,12 @@ public class LRRServer {
                                 default -> UserInfoManager.UserRole.UNKNOWN;
                             };
 
-                            if (userInfoManager.login(id, pwd, userRole)) {
+                            if (loggedInUsers.contains(id)) {
+                                System.out.println("[서버] 로그인 실패 (이미 접속 중): " + id);
+                                out.write("ALREADY_LOGGED_IN\n");
+                            } else if (userInfoManager.login(id, pwd, userRole)) {
+                                loggedInUsers.add(id);
+                                this.loggedInId = id;
                                 System.out.println("[서버] 로그인 승인: " + id + " (" + role + ")");
                                 out.write("LOGIN_SUCCESS\n");
                             } else {
@@ -107,6 +116,10 @@ public class LRRServer {
             } catch (IOException e) {
                 System.out.println("[서버] 클라이언트 연결 종료 또는 에러");
             } finally {
+                if (loggedInId != null) {
+                    loggedInUsers.remove(loggedInId);
+                    System.out.println("[서버] 클라이언트 연결 종료로 인한 로그아웃: " + loggedInId);
+                }
                 try {
                     socket.close();
                 } catch (IOException e) {
