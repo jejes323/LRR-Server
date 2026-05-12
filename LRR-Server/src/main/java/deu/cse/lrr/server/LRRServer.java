@@ -71,6 +71,37 @@ public class LRRServer {
                             out.write("LOGIN_FAIL\n");
                             out.flush();
                         }
+                    } else if (msg.startsWith("REGISTER:")) {
+                        // msg format: REGISTER:id,password,name,number,role
+                        String[] parts = msg.substring(9).split(",");
+                        if (parts.length >= 5) {
+                            String id = parts[0];
+                            String pwd = parts[1];
+                            String name = parts[2];
+                            String number = parts[3];
+                            String roleStr = parts[4];
+
+                            UserInfoManager.UserRole role = switch (roleStr) {
+                                case "STUDENT" -> UserInfoManager.UserRole.STUDENT;
+                                case "PROFESSOR" -> UserInfoManager.UserRole.PROFESSOR;
+                                case "ASSISTANT" -> UserInfoManager.UserRole.ASSISTANT;
+                                default -> UserInfoManager.UserRole.UNKNOWN;
+                            };
+
+                            UserInfoManager.DuplicateStatus dupStatus = userInfoManager.checkDuplicate(id, number);
+                            if (dupStatus == UserInfoManager.DuplicateStatus.ID_DUPLICATE) {
+                                out.write("ALREADY_EXISTS_ID\n");
+                            } else if (dupStatus == UserInfoManager.DuplicateStatus.NUMBER_DUPLICATE) {
+                                out.write("ALREADY_EXISTS_NUMBER\n");
+                            } else if (userInfoManager.register(id, pwd, name, number, role)) {
+                                out.write("REGISTER_SUCCESS\n");
+                            } else {
+                                out.write("REGISTER_FAIL\n");
+                            }
+                        } else {
+                            out.write("REGISTER_FAIL\n");
+                        }
+                        out.flush();
                     }
                 }
             } catch (IOException e) {
