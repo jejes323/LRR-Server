@@ -1,0 +1,26 @@
+students:
+  - id: "student01"
+    password: "pass1234"
+    name: "김학생"
+  - id: "student02"
+    password: "pass5678"
+    name: "이학생"
+  - id: "student03"
+    password: "pass9012"
+    name: "박학생"
+
+professors:
+  - id: "prof01"
+    password: "prof1234"
+    name: "홍교수"
+  - id: "prof02"
+    password: "prof5678"
+    name: "이교수"
+
+assistants:
+  - id: "assist01"
+    password: "asst1234"
+    name: "김조교"
+  - id: "assist02"
+    password: "asst5678"
+    name: "최조교"
