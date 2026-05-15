@@ -47,6 +47,8 @@ public class ServerController {
                         handleLogin(msg, out);
                     } else if (msg.startsWith("REGISTER:")) {
                         handleRegister(msg, out);
+                    } else if (msg.startsWith("GET_RESERVATION_LIST:")) {
+                        handleGetReservationList(msg, out);
                     }
                 }
             } catch (IOException e) {
@@ -81,13 +83,16 @@ public class ServerController {
                 if (model.isUserLoggedIn(id)) {
                     view.printLog("로그인 실패 (이미 접속 중): " + id);
                     out.write("ALREADY_LOGGED_IN\n");
-                } else if (model.loginUser(id, pwd, userRole)) {
-                    this.loggedInId = id;
-                    view.printLog("로그인 승인: " + id + " (" + role + ")");
-                    out.write("LOGIN_SUCCESS\n");
                 } else {
-                    view.printLog("로그인 실패 (정보 불일치): " + id + " (" + role + ")");
-                    out.write("LOGIN_FAIL\n");
+                    String name = model.loginUser(id, pwd, userRole);
+                    if (name != null) {
+                        this.loggedInId = id;
+                        view.printLog("로그인 승인: " + id + " (" + role + ")");
+                        out.write("LOGIN_SUCCESS," + name + "\n");
+                    } else {
+                        view.printLog("로그인 실패 (정보 불일치): " + id + " (" + role + ")");
+                        out.write("LOGIN_FAIL\n");
+                    }
                 }
             } else {
                 out.write("LOGIN_FAIL\n");
@@ -124,6 +129,17 @@ public class ServerController {
             } else {
                 out.write("REGISTER_FAIL\n");
             }
+            out.flush();
+        }
+
+        private void handleGetReservationList(String msg, BufferedWriter out) throws IOException {
+            String userId = msg.substring(21);
+            view.printLog("내 예약 조회 요청: " + userId);
+            
+            model.getReservationManager().loadReservations(); // 최신 데이터 로드
+            String response = model.getReservationManager().getReservationList(userId);
+            
+            out.write(response + "\n");
             out.flush();
         }
     }

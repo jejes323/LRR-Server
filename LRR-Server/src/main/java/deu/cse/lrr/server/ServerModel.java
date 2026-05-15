@@ -5,23 +5,30 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class ServerModel {
     private final UserInfoManager userInfoManager;
+    private final ReservationManager reservationManager;
     private final Set<String> loggedInUsers;
 
     public ServerModel() {
         userInfoManager = new UserInfoManager();
+        reservationManager = new ReservationManager();
         loggedInUsers = ConcurrentHashMap.newKeySet();
+    }
+
+    public ReservationManager getReservationManager() {
+        return reservationManager;
     }
 
     public boolean isUserLoggedIn(String id) {
         return loggedInUsers.contains(id);
     }
 
-    public boolean loginUser(String id, String pwd, UserInfoManager.UserRole role) {
-        if (userInfoManager.login(id, pwd, role)) {
+    public String loginUser(String id, String pwd, UserInfoManager.UserRole role) {
+        String name = userInfoManager.login(id, pwd, role);
+        if (name != null) {
             loggedInUsers.add(id);
-            return true;
+            return name;
         }
-        return false;
+        return null;
     }
 
     public void logoutUser(String id) {

@@ -41,10 +41,10 @@ public class UserInfoManager {
         }
     }
 
-    public boolean login(String id, String password, UserRole role) {
+    public String login(String id, String password, UserRole role) {
         if (data == null) {
             System.out.println("[오류] 사용자 데이터를 불러오지 못했습니다.");
-            return false;
+            return null;
         }
 
         String yamlKey = switch (role) {
@@ -56,11 +56,11 @@ public class UserInfoManager {
 
         if (yamlKey == null) {
             System.out.println("[오류] 역할이 선택되지 않았습니다.");
-            return false;
+            return null;
         }
 
         List<Map<String, String>> users = (List<Map<String, String>>) data.get(yamlKey);
-        if (users == null) return false;
+        if (users == null) return null;
 
         for (Map<String, String> user : users) {
             if (id.equals(user.get("id")) && password.equals(user.get("password"))) {
@@ -70,13 +70,14 @@ public class UserInfoManager {
                     case ASSISTANT -> "조교";
                     default        -> "알 수 없음";
                 };
-                System.out.println("[로그인 검증 성공] " + roleName + " 로그인 정보 일치. (이름: " + user.get("name") + ", ID: " + id + ")");
-                return true;
+                String name = user.get("name");
+                System.out.println("[로그인 검증 성공] " + roleName + " 로그인 정보 일치. (이름: " + name + ", ID: " + id + ")");
+                return name;
             }
         }
 
         System.out.println("[로그인 실패] 아이디 또는 비밀번호가 일치하지 않습니다.");
-        return false;
+        return null;
     }
 
     public enum DuplicateStatus {
