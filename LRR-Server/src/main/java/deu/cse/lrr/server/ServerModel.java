@@ -6,16 +6,28 @@ import java.util.concurrent.ConcurrentHashMap;
 public class ServerModel {
     private final UserInfoManager userInfoManager;
     private final ReservationManager reservationManager;
+    private final ReservationRequestManager reservationRequestManager;
     private final Set<String> loggedInUsers;
 
     public ServerModel() {
         userInfoManager = new UserInfoManager();
         reservationManager = new ReservationManager();
+        reservationRequestManager = new ReservationRequestManager();
         loggedInUsers = ConcurrentHashMap.newKeySet();
     }
 
     public ReservationManager getReservationManager() {
         return reservationManager;
+    }
+
+    public ReservationRequestManager getReservationRequestManager() {
+        return reservationRequestManager;
+    }
+
+    public boolean saveReservationRequest(String userId, String type, String room,
+                                          String date, String startTime, String endTime,
+                                          String purpose, String people) {
+        return reservationRequestManager.saveRequest(userId, type, room, date, startTime, endTime, purpose, people);
     }
 
     public boolean isUserLoggedIn(String id) {

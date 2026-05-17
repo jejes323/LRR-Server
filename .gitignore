@@ -1,1 +1,4 @@
 /LRR-Server/target/
+
+# 민감한 데이터 파일 제외
+/LRR-Server/src/main/data/*.yaml

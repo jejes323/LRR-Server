@@ -49,6 +49,8 @@ public class ServerController {
                         handleRegister(msg, out);
                     } else if (msg.startsWith("GET_RESERVATION_LIST:")) {
                         handleGetReservationList(msg, out);
+                    } else if (msg.startsWith("RESERVATION_REQUEST:")) {
+                        handleReservationRequest(msg, out);
                     }
                 }
             } catch (IOException e) {
@@ -140,6 +142,41 @@ public class ServerController {
             String response = model.getReservationManager().getReservationList(userId);
             
             out.write(response + "\n");
+            out.flush();
+        }
+
+        private void handleReservationRequest(String msg, BufferedWriter out) throws IOException {
+            // 포맷: RESERVATION_REQUEST:userId|type|room|date|startTime|endTime|purpose|people
+            String payload = msg.substring(20);
+            String[] parts = payload.split("\\|");
+
+            if (parts.length < 8) {
+                view.printLog("예약 신청 파싱 실패: " + msg);
+                out.write("RESERVATION_REQUEST_FAIL\n");
+                out.flush();
+                return;
+            }
+
+            String userId    = parts[0];
+            String type      = parts[1];
+            String room      = parts[2];
+            String date      = parts[3];
+            String startTime = parts[4];
+            String endTime   = parts[5];
+            String purpose   = parts[6];
+            String people    = parts[7];
+
+            view.printLog("예약 신청 수신: " + userId + " / " + type + " / " + room + " / " + date);
+
+            boolean success = model.saveReservationRequest(userId, type, room, date, startTime, endTime, purpose, people);
+
+            if (success) {
+                view.printLog("예약 신청 저장 완료: " + userId);
+                out.write("RESERVATION_REQUEST_SUCCESS\n");
+            } else {
+                view.printLog("예약 신청 저장 실패: " + userId);
+                out.write("RESERVATION_REQUEST_FAIL\n");
+            }
             out.flush();
         }
     }
