@@ -24,7 +24,7 @@ public class ServerModel {
         return reservationRequestManager;
     }
 
-    public boolean saveReservationRequest(String userId, String type, String room,
+    public String saveReservationRequest(String userId, String type, String room,
                                           String date, String startTime, String endTime,
                                           String purpose, String people) {
         return reservationRequestManager.saveRequest(userId, type, room, date, startTime, endTime, purpose, people);

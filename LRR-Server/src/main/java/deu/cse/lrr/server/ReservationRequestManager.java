@@ -40,7 +40,7 @@ public class ReservationRequestManager {
      * @param people    사용 인원
      * @return 저장 성공 여부
      */
-    public synchronized boolean saveRequest(String userId, String type, String room,
+    public synchronized String saveRequest(String userId, String type, String room,
                                             String date, String startTime, String endTime,
                                             String purpose, String people) {
         try {
@@ -52,25 +52,62 @@ public class ReservationRequestManager {
                 data.put("requests", requests);
             }
 
+            // 분 단위 정수로 변환 (중복 체크용)
+            int newStart = toMinutes(startTime);
+            int newEnd   = toMinutes(endTime);
+
+            // 중복 체크: 같은 방, 같은 날짜, 시간대 겹침 여부
+            for (Map<String, Object> existing : requests) {
+                String exDate = String.valueOf(existing.get("date"));
+                if (!date.equals(exDate)) continue;
+                if (!room.equals(String.valueOf(existing.get("room")))) continue;
+                if (!type.equals(String.valueOf(existing.get("type")))) continue;
+
+                int exStart = toMinutes(existing.get("startTime"));
+                int exEnd   = toMinutes(existing.get("endTime"));
+
+                if (newStart < exEnd && newEnd > exStart) {
+                    logger.warning("중복 예약 신청 감지: " + room + " / " + date + " / " + startTime + "~" + endTime);
+                    return "DUPLICATE";
+                }
+            }
+
             Map<String, Object> entry = new LinkedHashMap<>();
             entry.put("userId",    userId);
             entry.put("type",      type);
             entry.put("room",      room);
-            entry.put("date",      date);
-            entry.put("startTime", startTime);
-            entry.put("endTime",   endTime);
+            entry.put("date",      date);      // yyyy-MM-dd 문자열 그대로 저장
+            entry.put("startTime", startTime); // HH:mm 문자열 그대로 저장
+            entry.put("endTime",   endTime);   // HH:mm 문자열 그대로 저장
             entry.put("purpose",   purpose);
             entry.put("people",    people);
             entry.put("status",    "PENDING");
 
             requests.add(entry);
-            return saveYaml(REQUESTS_PATH, data);
+            return saveYaml(REQUESTS_PATH, data) ? "SUCCESS" : "FAIL";
 
         } catch (Exception e) {
             logger.log(Level.SEVERE, "예약 신청 저장 실패: " + e.getMessage(), e);
-            return false;
+            return "FAIL";
         }
     }
+
+    // "09:00" 혹은 정수(540)를 분 단위 정수로 변환
+    private int toMinutes(Object rawValue) {
+        if (rawValue == null) return -1;
+        if (rawValue instanceof Integer) return (Integer) rawValue;
+        String time = rawValue.toString();
+        try {
+            if (time.contains(":")) {
+                String[] parts = time.split(":");
+                return Integer.parseInt(parts[0]) * 60 + Integer.parseInt(parts[1]);
+            }
+            return Integer.parseInt(time);
+        } catch (Exception e) {
+            return -1;
+        }
+    }
+
 
     // ----------------------------------------------------------------
     // YAML 공통 유틸

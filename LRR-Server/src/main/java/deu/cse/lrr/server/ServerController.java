@@ -168,14 +168,21 @@ public class ServerController {
 
             view.printLog("예약 신청 수신: " + userId + " / " + type + " / " + room + " / " + date);
 
-            boolean success = model.saveReservationRequest(userId, type, room, date, startTime, endTime, purpose, people);
+            String result = model.saveReservationRequest(userId, type, room, date, startTime, endTime, purpose, people);
 
-            if (success) {
-                view.printLog("예약 신청 저장 완료: " + userId);
-                out.write("RESERVATION_REQUEST_SUCCESS\n");
-            } else {
-                view.printLog("예약 신청 저장 실패: " + userId);
-                out.write("RESERVATION_REQUEST_FAIL\n");
+            switch (result) {
+                case "SUCCESS" -> {
+                    view.printLog("예약 신청 저장 완료: " + userId);
+                    out.write("RESERVATION_REQUEST_SUCCESS\n");
+                }
+                case "DUPLICATE" -> {
+                    view.printLog("예약 신청 중복: " + userId);
+                    out.write("RESERVATION_REQUEST_DUPLICATE\n");
+                }
+                default -> {
+                    view.printLog("예약 신청 저장 실패: " + userId);
+                    out.write("RESERVATION_REQUEST_FAIL\n");
+                }
             }
             out.flush();
         }
