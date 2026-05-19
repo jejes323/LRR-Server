@@ -41,3 +41,7 @@ assistants:
   password: asst5678
   name: 최조교
   number: '9002'
+- number: '23145'
+  password: '1234'
+  name: 서영우
+  id: babo0001

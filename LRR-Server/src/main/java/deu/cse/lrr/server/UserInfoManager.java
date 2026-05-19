@@ -164,4 +164,28 @@ public class UserInfoManager {
             default -> null;
         };
     }
+
+    public String[] getUserDetails(String id) {
+        if (data == null) return new String[]{"알수없음", "알수없음"};
+        String[] keys = {"students", "professors", "assistants"};
+        for (String key : keys) {
+            List<Map<String, String>> users = (List<Map<String, String>>) data.get(key);
+            if (users != null) {
+                for (Map<String, String> user : users) {
+                    if (id.equals(user.get("id"))) {
+                        String name = user.get("name");
+                        String role = switch (key) {
+                            case "students" -> "학생";
+                            case "professors" -> "교수";
+                            case "assistants" -> "조교";
+                            default -> "알수없음";
+                        };
+                        return new String[]{name, role};
+                    }
+                }
+            }
+        }
+        return new String[]{"알수없음", "알수없음"};
+    }
 }
+

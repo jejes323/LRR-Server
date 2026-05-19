@@ -49,8 +49,12 @@ public class ServerController {
                         handleRegister(msg, out);
                     } else if (msg.startsWith("GET_RESERVATION_LIST:")) {
                         handleGetReservationList(msg, out);
+                    } else if (msg.startsWith("GET_ALL_RESERVATIONS:")) {
+                        handleGetAllReservations(msg, out);
                     } else if (msg.startsWith("RESERVATION_REQUEST:")) {
                         handleReservationRequest(msg, out);
+                    } else if (msg.startsWith("UPDATE_RESERVATION_STATUS:")) {
+                        handleUpdateReservationStatus(msg, out);
                     }
                 }
             } catch (IOException e) {
@@ -142,6 +146,51 @@ public class ServerController {
             String response = model.getReservationRequestManager().getReservationList(userId);
             
             out.write(response + "\n");
+            out.flush();
+        }
+
+        private void handleGetAllReservations(String msg, BufferedWriter out) throws IOException {
+            view.printLog("전체 예약 신청 목록 조회 요청");
+            String response = model.getReservationRequestManager().getAllRequestsList(model.getUserInfoManager());
+            out.write(response + "\n");
+            out.flush();
+        }
+
+        private void handleUpdateReservationStatus(String msg, BufferedWriter out) throws IOException {
+            // 포맷: UPDATE_RESERVATION_STATUS:userId|room|date|timeRange|newStatus
+            String payload = msg.substring("UPDATE_RESERVATION_STATUS:".length());
+            String[] parts = payload.split("\\|");
+            if (parts.length < 5) {
+                view.printLog("예약 상태 업데이트 파싱 실패: " + msg);
+                out.write("UPDATE_FAIL\n");
+                out.flush();
+                return;
+            }
+            
+            String userId = parts[0];
+            String room = parts[1];
+            String date = parts[2];
+            String timeRange = parts[3];
+            String newStatus = parts[4];
+            
+            view.printLog("예약 상태 업데이트 요청: " + userId + " / " + room + " / " + date + " / " + timeRange + " -> " + newStatus);
+            
+            String[] times = timeRange.split(" - ");
+            if (times.length < 2) {
+                view.printLog("시간대 범위 분리 실패: " + timeRange);
+                out.write("UPDATE_FAIL\n");
+                out.flush();
+                return;
+            }
+            String startTime = times[0].trim();
+            String endTime = times[1].trim();
+            
+            boolean success = model.getReservationRequestManager().updateRequestStatus(userId, room, date, startTime, endTime, newStatus);
+            if (success) {
+                out.write("UPDATE_SUCCESS\n");
+            } else {
+                out.write("UPDATE_FAIL\n");
+            }
             out.flush();
         }
 

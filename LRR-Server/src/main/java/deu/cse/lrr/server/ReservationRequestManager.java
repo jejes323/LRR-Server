@@ -205,4 +205,83 @@ public class ReservationRequestManager {
             return false;
         }
     }
+
+    public String getAllRequestsList(UserInfoManager userInfoManager) {
+        Map<String, Object> data = loadYaml(REQUESTS_PATH);
+        List<Map<String, Object>> requests = (List<Map<String, Object>>) data.get("requests");
+        if (requests == null || requests.isEmpty()) {
+            return "NO_REQUESTS";
+        }
+        
+        StringBuilder sb = new StringBuilder("ALL_RESERVATIONS:");
+        for (int i = 0; i < requests.size(); i++) {
+            Map<String, Object> req = requests.get(i);
+            String userId = String.valueOf(req.getOrDefault("userId", ""));
+            
+            // UserInfo에서 이름과 역할(한글) 가져오기
+            String[] userDetails = userInfoManager.getUserDetails(userId);
+            String name = userDetails[0];
+            String role = userDetails[1];
+            
+            String room = String.valueOf(req.getOrDefault("room", ""));
+            String date = String.valueOf(req.getOrDefault("date", ""));
+            String startTime = String.valueOf(req.getOrDefault("startTime", ""));
+            String endTime = String.valueOf(req.getOrDefault("endTime", ""));
+            String time = startTime + " - " + endTime;
+            
+            String statusRaw = String.valueOf(req.getOrDefault("status", "PENDING"));
+            String status = switch (statusRaw) {
+                case "PENDING"  -> "승인 대기";
+                case "APPROVED" -> "승인 완료";
+                case "REJECTED" -> "승인 거부";
+                default         -> statusRaw;
+            };
+            
+            sb.append(role).append("|")
+              .append(userId).append("|")
+              .append(name).append("|")
+              .append(room).append("|")
+              .append(date).append("|")
+              .append(time).append("|")
+              .append(status);
+              
+            if (i < requests.size() - 1) {
+                sb.append(";");
+            }
+        }
+        return sb.toString();
+    }
+
+    public synchronized boolean updateRequestStatus(String userId, String room, String date, String startTime, String endTime, String newStatus) {
+        try {
+            Map<String, Object> data = loadYaml(REQUESTS_PATH);
+            List<Map<String, Object>> requests = (List<Map<String, Object>>) data.get("requests");
+            if (requests == null) return false;
+            
+            boolean updated = false;
+            for (Map<String, Object> req : requests) {
+                String reqUser = String.valueOf(req.get("userId"));
+                String reqRoom = String.valueOf(req.get("room"));
+                String reqDate = String.valueOf(req.get("date"));
+                String reqStart = String.valueOf(req.get("startTime"));
+                String reqEnd = String.valueOf(req.get("endTime"));
+                
+                if (userId.equals(reqUser) && room.equals(reqRoom) && date.equals(reqDate) && startTime.equals(reqStart) && endTime.equals(reqEnd)) {
+                    req.put("status", newStatus);
+                    updated = true;
+                    break;
+                }
+            }
+            
+            if (updated) {
+                return saveYaml(REQUESTS_PATH, data);
+            }
+            return false;
+        } catch (Exception e) {
+            logger.log(Level.SEVERE, "예약 상태 업데이트 실패: " + e.getMessage(), e);
+            return false;
+        }
+    }
 }
+
+

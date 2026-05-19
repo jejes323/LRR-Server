@@ -7,7 +7,7 @@ requests:
   endTime: '14:50'
   purpose: 수업
   people: 4명
-  status: PENDING
+  status: APPROVED
 - userId: babo1234
   type: CLASSROOM
   room: 909호

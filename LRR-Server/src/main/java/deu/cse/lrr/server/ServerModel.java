@@ -24,6 +24,11 @@ public class ServerModel {
         return reservationRequestManager;
     }
 
+    public UserInfoManager getUserInfoManager() {
+        return userInfoManager;
+    }
+
+
     public String saveReservationRequest(String userId, String type, String room,
                                           String date, String startTime, String endTime,
                                           String purpose, String people) {
@@ -56,4 +61,9 @@ public class ServerModel {
     public boolean registerUser(String id, String password, String name, String number, UserInfoManager.UserRole role) {
         return userInfoManager.register(id, password, name, number, role);
     }
+
+    public String[] getUserDetails(String id) {
+        return userInfoManager.getUserDetails(id);
+    }
 }
+
