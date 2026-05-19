@@ -1,12 +1,43 @@
 students:
-- {id: student01, password: pass1234, name: 김학생, number: '20240001'}
-- {id: student02, password: pass5678, name: 이학생, number: '20240002'}
-- {id: student03, password: pass9012, name: 박학생, number: '20240003'}
-- {number: '20212992', password: '1234', name: 서영우, id: babo9828}
-- {number: '123', password: asd, name: asd, id: asd}
+- id: student01
+  password: pass1234
+  name: 김학생
+  number: '20240001'
+- id: student02
+  password: pass5678
+  name: 이학생
+  number: '20240002'
+- id: student03
+  password: pass9012
+  name: 박학생
+  number: '20240003'
+- number: '20212992'
+  password: '1234'
+  name: 서영우
+  id: babo9828
+- number: '123'
+  password: asd
+  name: asd
+  id: asd
 professors:
-- {id: prof01, password: prof1234, name: 홍교수, number: '1001'}
-- {id: prof02, password: prof5678, name: 이교수, number: '1002'}
+- id: prof01
+  password: prof1234
+  name: 홍교수
+  number: '1001'
+- id: prof02
+  password: prof5678
+  name: 이교수
+  number: '1002'
+- number: '01234'
+  password: '1234'
+  name: 장원영
+  id: babo1234
 assistants:
-- {id: assist01, password: asst1234, name: 김조교, number: '9001'}
-- {id: assist02, password: asst5678, name: 최조교, number: '9002'}
+- id: assist01
+  password: asst1234
+  name: 김조교
+  number: '9001'
+- id: assist02
+  password: asst5678
+  name: 최조교
+  number: '9002'

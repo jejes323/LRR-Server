@@ -110,6 +110,67 @@ public class ReservationRequestManager {
 
 
     // ----------------------------------------------------------------
+    // 사용자 예약 내역 통합 조회
+    // ----------------------------------------------------------------
+    public String getReservationList(String userId) {
+        List<Map<String, Object>> allUserReservations = new ArrayList<>();
+        
+        String[] paths = { REQUESTS_PATH, CLASSROOM_PATH, LAB_PATH };
+        for (String path : paths) {
+            Map<String, Object> data = loadYaml(path);
+            List<Map<String, Object>> list = (List<Map<String, Object>>) data.get("requests");
+            if (list == null) list = (List<Map<String, Object>>) data.get("reservations");
+            
+            if (list != null) {
+                for (Map<String, Object> req : list) {
+                    if (userId.equals(req.get("userId"))) {
+                        allUserReservations.add(req);
+                    }
+                }
+            }
+        }
+        
+        if (allUserReservations.isEmpty()) {
+            return "NO_RESERVATIONS";
+        }
+
+        StringBuilder sb = new StringBuilder("RESERVATION_LIST:");
+        for (int i = 0; i < allUserReservations.size(); i++) {
+            Map<String, Object> res = allUserReservations.get(i);
+
+            // YAML에는 time 필드 없이 startTime/endTime이 별도 저장됨
+            String time;
+            if (res.containsKey("time")) {
+                time = String.valueOf(res.get("time"));
+            } else {
+                String start = String.valueOf(res.getOrDefault("startTime", ""));
+                String end   = String.valueOf(res.getOrDefault("endTime", ""));
+                time = start + " - " + end;
+            }
+
+            // 영문 status → 한국어 변환 (클라이언트 색상 분기용)
+            String statusRaw = String.valueOf(res.getOrDefault("status", ""));
+            String status = switch (statusRaw) {
+                case "PENDING"  -> "승인 대기";
+                case "APPROVED" -> "승인 완료";
+                case "REJECTED" -> "승인 거부";
+                default         -> statusRaw;
+            };
+
+            sb.append(res.get("room")).append("|")
+              .append(res.get("date")).append("|")
+              .append(time).append("|")
+              .append(res.get("purpose")).append("|")
+              .append(status);
+
+            if (i < allUserReservations.size() - 1) {
+                sb.append(";");
+            }
+        }
+        return sb.toString();
+    }
+
+    // ----------------------------------------------------------------
     // YAML 공통 유틸
     // ----------------------------------------------------------------
 

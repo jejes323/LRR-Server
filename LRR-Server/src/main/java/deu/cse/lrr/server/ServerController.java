@@ -138,8 +138,8 @@ public class ServerController {
             String userId = msg.substring(21);
             view.printLog("내 예약 조회 요청: " + userId);
             
-            model.getReservationManager().loadReservations(); // 최신 데이터 로드
-            String response = model.getReservationManager().getReservationList(userId);
+            // 승인, 대기 예약 모두 포함하는 새로운 매니저 호출
+            String response = model.getReservationRequestManager().getReservationList(userId);
             
             out.write(response + "\n");
             out.flush();

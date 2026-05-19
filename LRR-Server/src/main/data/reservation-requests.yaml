@@ -1,0 +1,19 @@
+requests:
+- userId: babo9828
+  type: CLASSROOM
+  room: 910호
+  date: '2026-05-20'
+  startTime: '13:00'
+  endTime: '14:50'
+  purpose: 수업
+  people: 4명
+  status: PENDING
+- userId: babo1234
+  type: CLASSROOM
+  room: 909호
+  date: '2026-05-20'
+  startTime: '11:00'
+  endTime: '12:50'
+  purpose: 세미나
+  people: 3명
+  status: PENDING
